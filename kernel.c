@@ -17,7 +17,7 @@ void print_char_color(char c, unsigned char color) {
 }
 
 void print_char(char c) {
-    print_char_color(c, 0x07); // Білий за замовченням
+    print_char_color(c, 0x07);
 }
 
 void print(const char *str) {
@@ -60,7 +60,7 @@ void keyboard_handler() {
     unsigned char scancode = inb(0x60);
 
     if (scancode & 0x80) {
-        // Кнопку відпустили
+
     } else {
         if (scancode < sizeof(keymap)) {
             char c = keymap[scancode];

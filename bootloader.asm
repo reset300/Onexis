@@ -4,11 +4,11 @@
 start:
     cli
 
-    ; Показуємо: стартанули бутлоадер
+
     mov si, boot_msg
     call print_string
 
-    ; Завантаження ядра
+
     mov ax, 0x1000
     mov es, ax
     mov bx, 0x0000
@@ -21,11 +21,10 @@ start:
     int 0x13
     jc disk_error
 
-    ; Показуємо: завантажили ядро
     mov si, loaded_msg
     call print_string
 
-    ; Protected Mode
+
     cli
     lgdt [gdt_descriptor]
 
@@ -33,8 +32,7 @@ start:
     or eax, 1
     mov cr0, eax
 
-    ; Показуємо: переходимо в protected mode
-    ; (тут уже не виводимо, бо BIOS функції не працюють у protected mode)
+
 
     jmp 0x08:protected_mode_entry
 
