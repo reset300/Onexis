@@ -1,4 +1,6 @@
 #include "cmds.h"
+#include <time.h>
+#include <string.h>  // Підключаємо стандартну бібліотеку для роботи з рядками
 
 #define MAX_FILES 128
 #define NAME_SIZE 32
@@ -17,59 +19,21 @@ typedef struct {
 FileEntry fs[MAX_FILES];
 int fs_size = 0;
 int current_dir = 0;
-
 char path[NAME_SIZE * 4];
-
-void strcpy(char *dest, const char *src) {
-    while (*src) {
-        *dest++ = *src++;
-    }
-    *dest = 0;
-}
-
-int strlen(const char *str) {
-    int len = 0;
-    while (str[len]) len++;
-    return len;
-}
-
-int strcmp(const char *s1, const char *s2) {
-    while (*s1 && (*s1 == *s2)) {
-        s1++;
-        s2++;
-    }
-    return *(const unsigned char*)s1 - *(const unsigned char*)s2;
-}
-
-int strncmp(const char *s1, const char *s2, unsigned int n) {
-    while (n && *s1 && (*s1 == *s2)) {
-        ++s1;
-        ++s2;
-        --n;
-    }
-    if (n == 0) {
-        return 0;
-    } else {
-        return *(const unsigned char*)s1 - *(const unsigned char*)s2;
-    }
-}
 
 void init_fs() {
     fs[0].type = TYPE_DIR;
     fs[0].parent = -1;
     strcpy(fs[0].name, "/");
     fs_size = 1;
-
     strcpy(fs[fs_size].name, "home");
     fs[fs_size].type = TYPE_DIR;
     fs[fs_size].parent = 0;
     fs_size++;
-
     strcpy(fs[fs_size].name, "bin");
     fs[fs_size].type = TYPE_DIR;
     fs[fs_size].parent = 0;
     fs_size++;
-
     strcpy(fs[fs_size].name, "mnt");
     fs[fs_size].type = TYPE_DIR;
     fs[fs_size].parent = 0;
@@ -79,10 +43,8 @@ void init_fs() {
 const char* get_current_path() {
     int temp = current_dir;
     path[0] = '\0';
-
     char temp_path[NAME_SIZE * 4];
     temp_path[0] = '\0';
-
     while (temp != -1) {
         char buffer[NAME_SIZE + 2];
         buffer[0] = '/';
@@ -91,7 +53,6 @@ const char* get_current_path() {
         strcpy(temp_path, buffer);
         temp = fs[temp].parent;
     }
-
     strcpy(path, temp_path);
     return path;
 }
@@ -151,7 +112,6 @@ void execute_command(const char *input) {
         print("[rm] Not found.\n");
     } else if (strncmp(input, "cd ", 3) == 0) {
         const char *name = input + 3;
-
         if (strcmp(name, "..") == 0) {
             if (fs[current_dir].parent != -1) {
                 current_dir = fs[current_dir].parent;
@@ -159,14 +119,38 @@ void execute_command(const char *input) {
         } else if (strcmp(name, "/") == 0) {
             current_dir = 0;
         } else {
+            int found = 0;
             for (int i = 0; i < fs_size; i++) {
                 if (fs[i].parent == current_dir && strcmp(fs[i].name, name) == 0 && fs[i].type == TYPE_DIR) {
                     current_dir = i;
-                    return;
+                    found = 1;
+                    break;
                 }
             }
-            print("[cd] Directory not found.\n");
+            if (!found) {
+                print("[cd] Directory not found.\n");
+            }
         }
+        clear();
+        print_prompt();
+    } else if (strcmp(input, "date") == 0) {
+        time_t t;
+        struct tm *tm_info;
+        char buffer[26];
+        time(&t);
+        tm_info = localtime(&t);
+        strftime(buffer, 26, "%Y-%m-%d", tm_info);
+        print(buffer);
+        print("\n");
+    } else if (strcmp(input, "time") == 0) {
+        time_t t;
+        struct tm *tm_info;
+        char buffer[26];
+        time(&t);
+        tm_info = localtime(&t);
+        strftime(buffer, 26, "%H:%M:%S", tm_info);
+        print(buffer);
+        print("\n");
     } else {
         print("[error] Unknown command.\n");
     }
